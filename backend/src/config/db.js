@@ -20,6 +20,18 @@ const poolConfig = process.env.MYSQL_URL
       database: process.env.DB_NAME,
     };
 
+// Log seguro (sin password) de a qué host se está conectando realmente.
+// Útil para detectar en los logs de Railway si quedó apuntando a la URL pública
+// en vez de la interna (mysql.railway.internal) o viceversa.
+try {
+  const hostShown = typeof poolConfig === 'string'
+    ? new URL(poolConfig.replace('mysql://', 'http://')).hostname
+    : poolConfig.host;
+  console.log(`[db] conectando a host: ${hostShown}`);
+} catch {
+  console.log('[db] conectando (no se pudo parsear el host para el log)');
+}
+
 const pool = mysql.createPool({
   ...(typeof poolConfig === 'string' ? { uri: poolConfig } : poolConfig),
   waitForConnections: true,
@@ -27,7 +39,10 @@ const pool = mysql.createPool({
   queueLimit: 0,
   charset: 'utf8mb4',
   timezone: 'Z',
+  connectTimeout: 10000, // 10s — si el host no responde, falla rápido en vez de colgar el proceso (502 sin info)
 });
+
+pool.on('error', (err) => console.error('[db] pool error:', err.code || err.message));
 
 export const db = {
   /** Devuelve siempre { rows } */
