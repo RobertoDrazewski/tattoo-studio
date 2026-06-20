@@ -5,14 +5,14 @@
 html { scroll-behavior: smooth; }
 body { 
   @apply bg-snow text-ink font-body antialiased; 
-  /* Evita que Google Translate empuje toda tu página hacia abajo */
+  /* Evita que Google Translate empuje toda tu pÃ¡gina hacia abajo */
   top: 0 !important; 
 }
 
 @layer components {
   .display { @apply font-display font-extrabold tracking-tightest; }
   .eyebrow { @apply font-body text-[11px] font-semibold uppercase tracking-[0.28em] text-blood; }
-  .inp { @apply w-full border border-line bg-snow px-3 py-2.5 font-body text-sm text-ink placeholder:text-soft focus:border-ink focus:outline-none; }
+  .inp { @apply w-full border border-line bg-snow px-3 py-3 text-base text-ink placeholder:text-soft focus:border-ink focus:outline-none sm:py-2.5 sm:text-sm; font-family: inherit; }
 }
 
 ::selection { background: #111; color: #fff; }
@@ -26,34 +26,33 @@ body {
 
 /* ========================================================
    TRUCO CSS: BLINDAJE CONTRA GOOGLE TRANSLATE
+   (oculto en TODAS las resoluciones â€” el idioma se controla
+   con las banderitas propias, nunca con el widget de Google)
    ======================================================== */
 
-/* 1. Ocultar la barra superior que inyecta Google */
-.skiptranslate iframe {
+/* 1. Ocultar la barra superior que Google inyecta en <body> (desktop y mobile) */
+.skiptranslate,
+.skiptranslate iframe,
+iframe.goog-te-banner-frame {
   display: none !important;
+  height: 0 !important;
 }
+body { top: 0 !important; }
 
-/* 2. Ocultar los tooltips flotantes molestos al pasar el mouse por el texto traducido */
+/* 2. Ocultar los tooltips flotantes al pasar el mouse por texto traducido */
 #goog-gt-tt, .goog-te-balloon-frame {
   display: none !important;
 }
 
-/* 3. Limpiar el selector: quitar el texto "Powered by Google" y el logo */
-.goog-te-gadget {
-  color: transparent !important;
-  font-size: 0 !important;
+/* 3. El widget/selector nativo de Google nunca se muestra: lo manejamos
+      por cÃ³digo (changeLanguage) con las banderitas propias del navbar */
+#google_translate_element,
+#google_translate_element .goog-te-gadget,
+#google_translate_element .goog-te-gadget .goog-te-combo {
+  display: none !important;
 }
 
-/* 4. Estilizar el desplegable para que parezca nativo de tu sitio */
-.goog-te-gadget .goog-te-combo {
-  color: #1a1a1a !important; /* Color 'ink' */
-  background-color: transparent !important;
-  border: none !important;
-  font-family: inherit !important;
-  font-size: 12px !important;
-  text-transform: uppercase !important;
-  outline: none !important;
-  cursor: pointer;
-  margin: 0 !important;
-  padding: 2px 0 !important;
+/* 4. Si Google llegara a inyectar algo extra fuera de #google_translate_element */
+.goog-te-gadget-icon {
+  display: none !important;
 }

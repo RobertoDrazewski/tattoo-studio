@@ -55,9 +55,8 @@ export default function ChatWidget({ open, setOpen }) {
 
   return (
     <>
-      <button onClick={() => setOpen(!open)} className="fixed bottom-5 right-5 z-50 flex items-center gap-2 border border-ink bg-snow px-4 py-3 shadow-lg shadow-black/10 transition hover:bg-ink hover:text-snow" aria-label="Abrir chat">
-        <img src={mark} alt="" className="h-6 w-6" />
-        <span className="font-body text-[13px] font-semibold uppercase tracking-[0.1em]">Reservar / Cotizar</span>
+      <button onClick={() => setOpen(!open)} className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full border border-ink bg-snow shadow-lg shadow-black/15 transition hover:bg-ink active:scale-95" aria-label="Reservar o cotizar con IA">
+        <img src={mark} alt="" className="h-7 w-7" />
       </button>
 
       {open && (

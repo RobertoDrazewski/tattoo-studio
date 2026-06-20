@@ -51,11 +51,15 @@ export default function Footer() {
         {/* Sección inferior: Copyright, Acceso Staff y Créditos más apretados */}
         <div className="mt-8 flex flex-col items-center justify-center gap-5 border-t border-line/40 pt-6">
           <p className="text-center font-body text-[10px] uppercase tracking-[0.2em] text-soft">
-            © {new Date().getFullYear()} Rick Art · Todos los derechos reservados ·{' '}
-            <a href="/admin" className="font-semibold transition hover:text-ink hover:underline">
-              Staff
-            </a>
+            © {new Date().getFullYear()} Rick Art · Todos los derechos reservados
           </p>
+
+          <a
+            href="/admin"
+            className="inline-flex min-h-[44px] items-center justify-center px-5 py-2.5 font-body text-[11px] font-semibold uppercase tracking-[0.18em] text-soft transition hover:text-ink active:text-ink"
+          >
+            Acceso Staff
+          </a>
 
           <a 
             href="https://puma-code.com" 
@@ -69,7 +73,7 @@ export default function Footer() {
             <img 
               src={pumaIcon} 
               alt="Puma Code" 
-              className="h-5 w-auto opacity-40 mix-blend-luminosity transition duration-300 group-hover:opacity-100 group-hover:mix-blend-normal" 
+              className="h-9 w-auto transition duration-300 group-hover:scale-105" 
             />
           </a>
         </div>

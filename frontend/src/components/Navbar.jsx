@@ -68,10 +68,31 @@ export default function Navbar({ onReservar }) {
           <button onClick={onReservar} className="bg-ink px-6 py-2.5 font-body text-[13px] font-semibold uppercase tracking-[0.12em] text-snow transition hover:bg-blood">Reservar</button>
         </div>
 
-        <button onClick={() => setOpen(!open)} className="md:hidden" aria-label="Menú">
-           <div className="space-y-1.5"><span className="block h-px w-6 bg-ink" /><span className="block h-px w-6 bg-ink" /><span className="block h-px w-6 bg-ink" /></div>
+        <button onClick={() => setOpen(!open)} className="flex h-10 w-10 items-center justify-center md:hidden" aria-label="Menú" aria-expanded={open}>
+           <div className="space-y-1.5"><span className={`block h-px w-6 bg-ink transition ${open ? 'translate-y-2 rotate-45' : ''}`} /><span className={`block h-px w-6 bg-ink transition ${open ? 'opacity-0' : ''}`} /><span className={`block h-px w-6 bg-ink transition ${open ? '-translate-y-2 -rotate-45' : ''}`} /></div>
         </button>
       </nav>
+
+      {open && (
+        <div className="border-t border-line bg-snow px-5 py-5 md:hidden">
+          {links.map((l) => (
+            <button key={l.id} onClick={() => go(l.id)} className="block w-full py-3 text-left font-body text-sm font-medium uppercase tracking-[0.15em] text-soft transition hover:text-ink">{l.label}</button>
+          ))}
+
+          <div className="mt-3 flex items-center gap-3 border-t border-line pt-4">
+            <span className="font-body text-[11px] uppercase tracking-[0.15em] text-soft">Idioma</span>
+            <div className="flex items-center gap-2.5 text-lg">
+              <button onClick={() => changeLanguage('es')} title="Español" aria-label="Español">🇪🇸</button>
+              <button onClick={() => changeLanguage('en')} title="English" aria-label="English">🇬🇧</button>
+              <button onClick={() => changeLanguage('fr')} title="Français" aria-label="Français">🇫🇷</button>
+              <button onClick={() => changeLanguage('de')} title="Deutsch" aria-label="Deutsch">🇩🇪</button>
+              <button onClick={() => changeLanguage('it')} title="Italiano" aria-label="Italiano">🇮🇹</button>
+            </div>
+          </div>
+
+          <button onClick={() => { setOpen(false); onReservar(); }} className="mt-5 w-full bg-ink py-3.5 font-body text-[13px] font-semibold uppercase tracking-[0.12em] text-snow transition hover:bg-blood">Reservar</button>
+        </div>
+      )}
 
       {/* Widget Oculto (Necesario para que el script funcione) */}
       <div id="google_translate_element" className="hidden"></div>

@@ -6,7 +6,6 @@ import Gallery from './components/Gallery';
 import InstagramFeed from './components/InstagramFeed';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
-import WhatsAppFloat from './components/WhatsAppFloat';
 import ChatWidget from './components/ChatWidget';
 import AdminApp from './admin/AdminApp';
 
@@ -28,7 +27,6 @@ export default function App() {
         <Contact />
       </main>
       <Footer />
-      <WhatsAppFloat />
       <ChatWidget open={chatOpen} setOpen={setChatOpen} />
     </div>
   );
