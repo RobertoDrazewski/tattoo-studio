@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html { scroll-behavior: smooth; }
+body { 
+  @apply bg-snow text-ink font-body antialiased; 
+  /* Evita que Google Translate empuje toda tu página hacia abajo */
+  top: 0 !important; 
+}
+
+@layer components {
+  .display { @apply font-display font-extrabold tracking-tightest; }
+  .eyebrow { @apply font-body text-[11px] font-semibold uppercase tracking-[0.28em] text-blood; }
+  .inp { @apply w-full border border-line bg-snow px-3 py-2.5 font-body text-sm text-ink placeholder:text-soft focus:border-ink focus:outline-none; }
+}
+
+::selection { background: #111; color: #fff; }
+::-webkit-scrollbar { width: 9px; }
+::-webkit-scrollbar-track { background: #faf9f7; }
+::-webkit-scrollbar-thumb { background: #d8d3cc; border-radius: 8px; }
+
+@media (prefers-reduced-motion: reduce) { 
+  *, .animate-fadeUp { animation: none !important; scroll-behavior: auto; } 
+}
+
+/* ========================================================
+   TRUCO CSS: BLINDAJE CONTRA GOOGLE TRANSLATE
+   ======================================================== */
+
+/* 1. Ocultar la barra superior que inyecta Google */
+.skiptranslate iframe {
+  display: none !important;
+}
+
+/* 2. Ocultar los tooltips flotantes molestos al pasar el mouse por el texto traducido */
+#goog-gt-tt, .goog-te-balloon-frame {
+  display: none !important;
+}
+
+/* 3. Limpiar el selector: quitar el texto "Powered by Google" y el logo */
+.goog-te-gadget {
+  color: transparent !important;
+  font-size: 0 !important;
+}
+
+/* 4. Estilizar el desplegable para que parezca nativo de tu sitio */
+.goog-te-gadget .goog-te-combo {
+  color: #1a1a1a !important; /* Color 'ink' */
+  background-color: transparent !important;
+  border: none !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  outline: none !important;
+  cursor: pointer;
+  margin: 0 !important;
+  padding: 2px 0 !important;
+}
