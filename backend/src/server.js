@@ -6,11 +6,22 @@ import api from './routes/index.js';
 
 const app = express();
 
-const allowed = [process.env.CLIENT_URL, process.env.ADMIN_URL, 'http://localhost:5173', 'http://localhost:5174']
-  .filter(Boolean);
+const allowed = [
+  process.env.CLIENT_URL,
+  process.env.ADMIN_URL,
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://rickart13.up.railway.app',
+].filter(Boolean);
 
 app.use(cors({
-  origin: (origin, cb) => (!origin || allowed.includes(origin)) ? cb(null, true) : cb(null, true), // abrir en dev; restringí en prod con allowed
+  origin(origin, cb) {
+    // Sin origin (curl, healthcheck, server-to-server) → permitir
+    if (!origin) return cb(null, true);
+    if (allowed.includes(origin)) return cb(null, true);
+    console.warn('[cors] origen bloqueado:', origin);
+    cb(null, false);
+  },
   credentials: true,
 }));
 app.use(express.json({ limit: '2mb' }));
