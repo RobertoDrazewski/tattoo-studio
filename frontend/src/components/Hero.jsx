@@ -26,7 +26,11 @@ export default function Hero({ onReservar }) {
         <div className="relative">
           <div className="relative aspect-[4/5] w-full overflow-hidden border border-line bg-paper">
             {HERO_PHOTO ? (
-              <img src={HERO_PHOTO} alt="Rick tatuando" className="h-full w-full object-cover" />
+              <img
+                src={HERO_PHOTO}
+                alt="Rick tatuando"
+                className="h-full w-full object-cover object-top"
+              />
             ) : (
               <div className="flex h-full w-full flex-col items-center justify-center gap-6">
                 <Logo height={140} variant="mark" />
@@ -35,7 +39,7 @@ export default function Hero({ onReservar }) {
             )}
           </div>
           <div className="mt-4 flex justify-between font-body text-[11px] uppercase tracking-[0.2em] text-soft">
-            <span>+12 años</span><span>Solo tinta negra</span><span>@rick_art13</span>
+            <span>+12 años</span><span>Solo tinta negra</span><span>@rick.art13</span>
           </div>
         </div>
       </div>

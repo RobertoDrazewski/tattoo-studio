@@ -9,7 +9,7 @@ export default function InstagramFeed() {
       <div className="mx-auto max-w-6xl px-5">
         <div className="flex items-end justify-between">
           <div><p className="eyebrow">De donde vienen mis clientes</p><h2 className="mt-3 display text-4xl text-ink md:text-5xl">Instagram</h2></div>
-          <a href="https://instagram.com/rick_art13" target="_blank" rel="noreferrer" className="font-body text-sm font-semibold uppercase tracking-[0.14em] text-ink hover:text-blood">@rick_art13 →</a>
+          <a href="https://instagram.com/rick.art13" target="_blank" rel="noreferrer" className="font-body text-sm font-semibold uppercase tracking-[0.14em] text-ink hover:text-blood">@rick.art13 →</a>
         </div>
         <div className="mt-8 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
           {items.slice(0, 12).map((p) => (

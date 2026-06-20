@@ -25,7 +25,7 @@ export default function Footer() {
             {/* Íconos sociales mejorados (SVG) */}
             <div className="mt-4 flex justify-center gap-3 md:justify-end">
               <a 
-                href="https://instagram.com/rick_art13" 
+                href="https://instagram.com/rick.art13" 
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-soft transition hover:border-ink hover:bg-snow hover:text-ink" 
                 aria-label="Instagram"
               >

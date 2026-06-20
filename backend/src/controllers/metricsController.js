@@ -43,7 +43,7 @@ export async function recomendaciones(req, res) {
     if (!ai) return res.json({ recomendaciones: ['Configurá OPENAI_API_KEY para recibir recomendaciones de IA.'] });
 
     const prompt = `Sos consultor de marketing para un estudio de tatuajes de realismo B/N (religioso/dark) en España,
-cuyos clientes llegan sobre todo por Instagram (@rick_art13). Estos son los números del mes:
+cuyos clientes llegan sobre todo por Instagram (@rick.art13). Estos son los números del mes:
 - Presupuestos pendientes: ${m.presupuestos_pendientes}
 - Tatuajes confirmados este mes: ${m.confirmados_mes}
 - Ingresos del mes: ${m.ingresos_mes_eur} €

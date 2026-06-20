@@ -44,7 +44,7 @@ async function localFallback() {
     id: `local-${i}`,
     caption: r.titulo || '',
     image: r.imagen_url,
-    permalink: process.env.IG_PROFILE_URL || 'https://instagram.com/rick_art13',
+    permalink: process.env.IG_PROFILE_URL || 'https://instagram.com/rick.art13',
     local: true,
   }));
 }
