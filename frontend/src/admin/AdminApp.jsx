@@ -157,13 +157,25 @@ function Estado({ e }) {
 /* ───────────── CALENDARIO ───────────── */
 function TabCalendario() {
   const [turnos, setTurnos] = useState([]);
-  const load = () => api.turnos().then(setTurnos).catch(() => {});
-  useEffect(() => { load(); }, []);
+  const [verTodos, setVerTodos] = useState(false);
+  const [busyId, setBusyId] = useState(null);
+  const load = () => api.turnos(verTodos).then(setTurnos).catch(() => {});
+  useEffect(() => { load(); }, [verTodos]);
   const grupos = turnos.reduce((acc, t) => { const k = new Date(t.inicio).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }); (acc[k] ||= []).push(t); return acc; }, {});
-  const accion = async (t, estado) => { await api.actualizarTurno(t.id, { estado }); load(); };
+  const accion = async (t, estado) => {
+    if (estado === 'cancelado' && !confirm(`¿Cancelar el turno de ${t.cliente_nombre}?`)) return;
+    setBusyId(t.id);
+    try { await api.actualizarTurno(t.id, { estado }); await load(); }
+    catch (e) { alert(e.message || 'No se pudo actualizar el turno'); }
+    finally { setBusyId(null); }
+  };
   return (
     <div>
       <H sub="Sesiones confirmadas. Cada bloque muestra cliente, pieza, precio pactado y horario.">Calendario</H>
+      <label className="mb-5 flex items-center gap-2 font-body text-xs text-soft">
+        <input type="checkbox" className="h-4 w-4" checked={verTodos} onChange={(e) => setVerTodos(e.target.checked)} />
+        Ver también completados y cancelados
+      </label>
       {!turnos.length && <p className="font-body text-soft">No hay turnos agendados. Confirmá una reserva para que aparezca acá.</p>}
       <div className="space-y-6 sm:space-y-7">
         {Object.entries(grupos).map(([dia, lista]) => (
@@ -171,22 +183,28 @@ function TabCalendario() {
             <p className="mb-2 font-body text-xs font-semibold uppercase tracking-[0.18em] text-blood">{dia}</p>
             <div className="space-y-2">
               {lista.map((t) => (
-                <div key={t.id} className="border border-line bg-snow p-3">
+                <div key={t.id} className={`border border-line bg-snow p-3 ${t.estado === 'cancelado' ? 'opacity-50' : ''}`}>
                   <div className="flex items-start gap-3 sm:items-center sm:gap-4">
                     <div className="shrink-0 text-center">
                       <p className="font-display text-base font-bold text-ink sm:text-lg">{new Date(t.inicio).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</p>
                       <p className="font-body text-[10px] uppercase text-soft">a {new Date(t.fin).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
                     <div className="min-w-0 flex-1 border-l border-line pl-3 sm:pl-4">
-                      <p className="truncate font-display font-bold text-ink">{t.cliente_nombre}</p>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <p className="truncate font-display font-bold text-ink">{t.cliente_nombre}</p>
+                        {t.estado === 'completado' && <span className="bg-ink px-2 py-0.5 font-body text-[10px] uppercase text-snow">completado</span>}
+                        {t.estado === 'cancelado' && <span className="border border-line px-2 py-0.5 font-body text-[10px] uppercase text-soft">cancelado</span>}
+                      </div>
                       <p className="font-body text-xs text-soft sm:text-sm">{t.proyecto_titulo || 'Tatuaje'} · sesión {t.numero_sesion}/{t.total_sesiones} {t.precio_pactado ? `· ${eur(t.precio_pactado)}` : ''}</p>
                     </div>
                   </div>
-                  <div className="mt-3 flex items-center gap-2 border-t border-line pt-3 sm:mt-0 sm:border-t-0 sm:pt-0">
-                    <a href={WA(t.telefono)} target="_blank" rel="noreferrer" className="flex h-11 w-11 shrink-0 items-center justify-center bg-[#25D366]" title="WhatsApp"><svg viewBox="0 0 32 32" className="h-4 w-4 fill-white"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.1.6 4.1 1.6 5.9L4 29l8.3-1.6C14 28.4 15 28.6 16 28.6c6.6 0 12-5.4 12-12S22.6 3 16 3z"/></svg></a>
-                    <button onClick={() => accion(t, 'completado')} className="h-11 flex-1 border border-line font-body text-sm active:bg-paper sm:w-11 sm:flex-none">✓ Hecho</button>
-                    <button onClick={() => accion(t, 'cancelado')} className="h-11 flex-1 border border-line font-body text-sm text-blood active:border-blood sm:w-11 sm:flex-none">✕ Cancelar</button>
-                  </div>
+                  {t.estado !== 'cancelado' && t.estado !== 'completado' && (
+                    <div className="mt-3 grid grid-cols-3 gap-2 border-t border-line pt-3 sm:flex sm:items-center sm:border-t-0 sm:pt-0">
+                      <a href={WA(t.telefono)} target="_blank" rel="noreferrer" className="flex h-11 items-center justify-center bg-[#25D366] sm:w-11 sm:shrink-0" title="WhatsApp"><svg viewBox="0 0 32 32" className="h-4 w-4 fill-white"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.1.6 4.1 1.6 5.9L4 29l8.3-1.6C14 28.4 15 28.6 16 28.6c6.6 0 12-5.4 12-12S22.6 3 16 3z"/></svg></a>
+                      <button onClick={() => accion(t, 'completado')} disabled={busyId === t.id} className="h-11 whitespace-nowrap border border-line px-2 font-body text-xs active:bg-paper disabled:opacity-50 sm:px-3 sm:text-sm">✓ Hecho</button>
+                      <button onClick={() => accion(t, 'cancelado')} disabled={busyId === t.id} className="h-11 whitespace-nowrap border border-line px-2 font-body text-xs text-blood active:border-blood disabled:opacity-50 sm:px-3 sm:text-sm">✕ Cancelar</button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -280,7 +298,7 @@ function InsumosTable({ items, reload }) {
 /* ───────────── BANNER IA ───────────── */
 function TabBanner() {
   const [idea, setIdea] = useState('');
-  const [draft, setDraft] = useState({ titulo: '', subtitulo: '', cta_texto: '', cta_url: '', imagen_url: '' });
+  const [draft, setDraft] = useState({ titulo: '', subtitulo: '', cta_texto: '', cta_url: '', imagen_url: '', expira_at: '' });
   const [gen, setGen] = useState(false);
   const [banners, setBanners] = useState([]);
   const [progress, setProgress] = useState(0);
@@ -318,13 +336,20 @@ function TabBanner() {
     Object.entries(draft).forEach(([k, v]) => fd.append(k, v));
     fd.append('activo', '1');
     await api.crearBanner(fd);
-    setDraft({ titulo: '', subtitulo: '', cta_texto: '', cta_url: '', imagen_url: '' });
+    setDraft({ titulo: '', subtitulo: '', cta_texto: '', cta_url: '', imagen_url: '', expira_at: '' });
     setIdea('');
     load();
   };
 
   const activar = async (b) => { await api.editarBanner(b.id, formOf({ activo: b.activo ? 0 : 1 })); load(); };
   const borrar = async (b) => { if (confirm('¿Borrar este banner?')) { await api.borrarBanner(b.id); load(); } };
+  const cambiarExpiracion = async (b) => {
+    const actual = b.expira_at ? new Date(b.expira_at).toISOString().slice(0, 16) : '';
+    const nueva = prompt('Caducidad (formato AAAA-MM-DDTHH:MM). Vacío = sin caducidad:', actual);
+    if (nueva === null) return; // canceló
+    await api.editarBanner(b.id, formOf({ expira_at: nueva }));
+    load();
+  };
 
   return (
     <div>
@@ -362,7 +387,9 @@ function TabBanner() {
           <Field label="CTA (texto del botón)"><input value={draft.cta_texto} onChange={(e) => setDraft({ ...draft, cta_texto: e.target.value })} className="inp" /></Field>
           <Field label="Subtítulo"><input value={draft.subtitulo} onChange={(e) => setDraft({ ...draft, subtitulo: e.target.value })} className="inp" /></Field>
           <Field label="CTA URL (opcional)"><input value={draft.cta_url} onChange={(e) => setDraft({ ...draft, cta_url: e.target.value })} placeholder="#contacto" className="inp" /></Field>
+          <Field label="Caduca el (opcional)"><input type="datetime-local" value={draft.expira_at} onChange={(e) => setDraft({ ...draft, expira_at: e.target.value })} className="inp" /></Field>
         </div>
+        <p className="mt-1.5 font-body text-[11px] text-soft">Si lo dejás vacío, el banner queda activo hasta que lo desactives a mano.</p>
 
         {draft.imagen_url && (
           <div className="mt-4 border border-line bg-paper p-3">
@@ -388,23 +415,34 @@ function TabBanner() {
       <Card title="Banners">
         {!banners.length && <p className="font-body text-soft">Sin banners creados.</p>}
         <div className="space-y-2">
-          {banners.map((b) => (
-            <div key={b.id} className="flex items-center gap-3 border border-line p-3">
-              {b.imagen_url && (
-                <div className="h-12 w-12 shrink-0 overflow-hidden border border-line bg-paper">
-                  <img src={asset(b.imagen_url)} alt="" className="h-full w-full object-cover" />
+          {banners.map((b) => {
+            const vencido = b.expira_at && new Date(b.expira_at) <= new Date();
+            return (
+              <div key={b.id} className="flex flex-wrap items-center gap-3 border border-line p-3 sm:flex-nowrap">
+                {b.imagen_url && (
+                  <div className="h-12 w-12 shrink-0 overflow-hidden border border-line bg-paper">
+                    <img src={asset(b.imagen_url)} alt="" className="h-full w-full object-cover" />
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <span className="block truncate font-display font-bold text-ink">{b.titulo}</span>
+                  <span className="block truncate font-body text-xs text-soft">{b.subtitulo}</span>
+                  {b.expira_at ? (
+                    <span className={`mt-0.5 block font-body text-[11px] ${vencido ? 'text-blood' : 'text-soft'}`}>
+                      {vencido ? 'Venció el' : 'Caduca el'} {new Date(b.expira_at).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  ) : (
+                    <span className="mt-0.5 block font-body text-[11px] text-soft">Sin caducidad</span>
+                  )}
                 </div>
-              )}
-              <div className="min-w-0 flex-1">
-                <span className="block truncate font-display font-bold text-ink">{b.titulo}</span>
-                <span className="block truncate font-body text-xs text-soft">{b.subtitulo}</span>
+                <div className="flex w-full shrink-0 flex-wrap gap-1.5 sm:w-auto sm:flex-row sm:items-center">
+                  <button onClick={() => activar(b)} className={`px-3 py-2 font-body text-[11px] uppercase ${b.activo ? 'bg-ink text-snow' : 'border border-line text-soft'}`}>{b.activo ? 'Activo' : 'Activar'}</button>
+                  <button onClick={() => cambiarExpiracion(b)} className="border border-line px-3 py-2 font-body text-[11px] uppercase text-soft active:border-ink active:text-ink">Caducidad</button>
+                  <button onClick={() => borrar(b)} className="px-3 py-2 font-body text-[11px] text-blood active:underline">Borrar</button>
+                </div>
               </div>
-              <div className="flex shrink-0 flex-col gap-1.5 sm:flex-row sm:items-center">
-                <button onClick={() => activar(b)} className={`px-3 py-2 font-body text-[11px] uppercase ${b.activo ? 'bg-ink text-snow' : 'border border-line text-soft'}`}>{b.activo ? 'Activo' : 'Activar'}</button>
-                <button onClick={() => borrar(b)} className="px-3 py-2 font-body text-[11px] text-blood active:underline">Borrar</button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </Card>
     </div>
@@ -469,10 +507,16 @@ function TabMetricas() {
         {kpis.map(([l, v]) => (<div key={l} className="border border-line bg-snow p-4 sm:p-5"><p className="font-body text-[10px] uppercase tracking-widest text-soft sm:text-[11px]">{l}</p><p className="mt-2 display text-2xl text-ink sm:text-3xl">{v}</p></div>))}
       </div>
       <Card title="Ingresos por mes" className="mt-6">
+        {m.serie_ingresos.length === 1 && (
+          <p className="mb-3 font-body text-[11px] text-soft">Todavía hay un solo mes con datos — el gráfico se va a volver comparativo a medida que se acumulen más meses.</p>
+        )}
         <div className="flex items-end gap-2 sm:gap-3" style={{ height: 180 }}>
           {m.serie_ingresos.length ? m.serie_ingresos.map((s) => (
             <div key={s.mes} className="flex flex-1 flex-col items-center gap-2">
-              <div className="flex w-full flex-col justify-end" style={{ height: 140 }}><div className="w-full bg-ink" style={{ height: `${(s.ingresos / maxIng) * 100}%` }} title={eur(s.ingresos)} /></div>
+              <div className="flex w-full flex-col justify-end" style={{ height: 140 }}>
+                <span className="mb-1 text-center font-body text-[10px] font-semibold text-ink">{eur(s.ingresos)}</span>
+                <div className="w-full bg-ink" style={{ height: `${Math.max((s.ingresos / maxIng) * 100, 6)}%` }} title={eur(s.ingresos)} />
+              </div>
               <span className="font-body text-[9px] text-soft sm:text-[10px]">{s.mes.slice(5)}</span>
             </div>
           )) : <p className="font-body text-soft">Aún sin datos.</p>}

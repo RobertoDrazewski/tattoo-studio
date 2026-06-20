@@ -1,18 +1,20 @@
 import db from '../config/db.js';
 import { planSessions } from '../utils/sessionPlanner.js';
 
-/** GET /api/turnos?desde=&hasta=  (admin) — para el calendario */
+/** GET /api/turnos?desde=&hasta=&todos=1  (admin) — para el calendario */
 export async function listarTurnos(req, res) {
-  const { desde, hasta } = req.query;
+  const { desde, hasta, todos } = req.query;
   const params = [];
   let sql = `SELECT t.*, c.nombre AS cliente_nombre, c.telefono, c.email,
                     p.titulo AS proyecto_titulo, p.zona_cuerpo, p.precio_pactado
              FROM turnos t
              JOIN clientes c ON c.id=t.cliente_id
-             LEFT JOIN proyectos p ON p.id=t.proyecto_id
-             WHERE t.estado<>'cancelado'`;
-  if (desde) { sql += ' AND t.inicio>=?'; params.push(desde); }
-  if (hasta) { sql += ' AND t.inicio<=?'; params.push(hasta); }
+             LEFT JOIN proyectos p ON p.id=t.proyecto_id`;
+  const where = [];
+  if (!todos) where.push("t.estado<>'cancelado'");
+  if (desde) { where.push('t.inicio>=?'); params.push(desde); }
+  if (hasta) { where.push('t.inicio<=?'); params.push(hasta); }
+  if (where.length) sql += ' WHERE ' + where.join(' AND ');
   sql += ' ORDER BY t.inicio ASC';
   const { rows } = await db.query(sql, params);
   res.json(rows);

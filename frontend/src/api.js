@@ -35,7 +35,7 @@ export const api = {
   me: () => req('/auth/me'),
 
   // Calendario
-  turnos: (desde, hasta) => req(`/turnos${desde ? `?desde=${desde}&hasta=${hasta}` : ''}`),
+  turnos: (todos) => req(`/turnos${todos ? '?todos=1' : ''}`),
   actualizarTurno: (id, body) => req(`/turnos/${id}`, { method: 'PATCH', body }),
 
   // Galería admin
