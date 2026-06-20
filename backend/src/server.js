@@ -4,6 +4,15 @@ import path from 'node:path';
 import 'dotenv/config';
 import api from './routes/index.js';
 
+// Aviso temprano y claro si faltan variables críticas, en vez de un crash
+// silencioso recién cuando alguien use la función que las necesita.
+const REQUIRED_ENV = ['JWT_SECRET'];
+const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
+if (missing.length) {
+  console.error(`⚠️  Faltan variables de entorno requeridas: ${missing.join(', ')}`);
+  console.error('   El servidor va a arrancar, pero las funciones que las usan van a fallar.');
+}
+
 const app = express();
 
 const allowed = [
