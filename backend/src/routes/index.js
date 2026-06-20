@@ -7,7 +7,7 @@ import { cotizar } from '../controllers/quoteController.js';
 import { chat } from '../controllers/chatController.js';
 import { listarTurnos, actualizarTurno, disponibilidad } from '../controllers/appointmentController.js';
 import { listarGaleria, subirGaleria, borrarGaleria, editarGaleria } from '../controllers/galleryController.js';
-import { bannerActivo, listarBanners, crearBanner, editarBanner, borrarBanner, generarBannerIA } from '../controllers/bannerController.js';
+import { bannerActivo, listarBanners, crearBanner, editarBanner, borrarBanner, generarBannerIA, estadoBannerIA } from '../controllers/bannerController.js';
 import { crearContacto, listarContactos } from '../controllers/contactController.js';
 import { feed } from '../controllers/instagramController.js';
 import { getTarifas, updateConfig, addItem, updateItem, deleteItem } from '../controllers/tariffController.js';
@@ -42,6 +42,7 @@ r.delete('/galeria/:id', requireAuth, borrarGaleria);
 r.get('/banner/all', requireAuth, listarBanners);
 r.post('/banner', requireAuth, upload.single('imagen'), crearBanner);
 r.post('/banner/generar', requireAuth, generarBannerIA);
+r.get('/banner/generar/:jobId', requireAuth, estadoBannerIA);
 r.patch('/banner/:id', requireAuth, upload.single('imagen'), editarBanner);
 r.delete('/banner/:id', requireAuth, borrarBanner);
 

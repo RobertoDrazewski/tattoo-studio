@@ -12,7 +12,12 @@ async function req(path, { method = 'GET', body, form } = {}) {
   if (form) opts.body = form;
   else if (body) opts.body = JSON.stringify(body);
   const res = await fetch(BASE + path, opts);
-  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || res.statusText);
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const err = new Error(data.error || res.statusText);
+    Object.assign(err, data); // conserva campos extra (ej: copy de texto cuando solo falla la imagen)
+    throw err;
+  }
   return res.status === 204 ? null : res.json();
 }
 // Cloudinary devuelve URLs absolutas; si alguna vez es relativa, la prefijamos
@@ -47,6 +52,7 @@ export const api = {
   banners: () => req('/banner/all'),
   crearBanner: (form) => req('/banner', { method: 'POST', form }),
   generarBanner: (idea) => req('/banner/generar', { method: 'POST', body: { idea } }),
+  estadoBanner: (jobId) => req(`/banner/generar/${jobId}`),
   editarBanner: (id, form) => req(`/banner/${id}`, { method: 'PATCH', form }),
   borrarBanner: (id) => req(`/banner/${id}`, { method: 'DELETE' }),
 

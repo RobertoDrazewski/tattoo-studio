@@ -311,23 +311,46 @@ function TabBanner() {
     setGen(true);
     setProgress(0);
     const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 95) return prev;
-        const salto = Math.floor(Math.random() * 5) + 2;
-        return Math.min(prev + salto, 95);
-      });
+      setProgress((prev) => (prev >= 95 ? prev : Math.min(prev + (Math.floor(Math.random() * 5) + 2), 95)));
     }, 450);
 
+    const terminar = () => { clearInterval(interval); setTimeout(() => setGen(false), 600); };
+
     try {
-      const r = await api.generarBanner(idea);
-      clearInterval(interval);
-      setProgress(100);
-      setTimeout(() => { setDraft({ ...draft, ...r }); }, 300);
+      // Esto responde casi al instante (solo arranca el trabajo en el server).
+      const { job_id } = await api.generarBanner(idea);
+
+      // Consultamos el estado cada 2s. Como cada request de polling es corto,
+      // ningún timeout de red intermedio puede hacer perder el resultado:
+      // el trabajo sigue corriendo en el servidor pase lo que pase con la conexión.
+      const maxIntentos = 90; // ~3 minutos de margen
+      for (let i = 0; i < maxIntentos; i++) {
+        await new Promise((r) => setTimeout(r, 2000));
+        let job;
+        try {
+          job = await api.estadoBanner(job_id);
+        } catch {
+          continue; // un polling individual que falla no aborta todo, reintenta
+        }
+        if (job.status === 'procesando') continue;
+        if (job.status === 'listo') {
+          setProgress(100);
+          setTimeout(() => { setDraft({ ...draft, titulo: job.titulo, subtitulo: job.subtitulo, cta_texto: job.cta_texto, imagen_url: job.imagen_url }); }, 200);
+          terminar();
+          return;
+        }
+        if (job.status === 'error') {
+          if (job.titulo) setDraft({ ...draft, titulo: job.titulo, subtitulo: job.subtitulo || '', cta_texto: job.cta_texto || '', imagen_url: '' });
+          alert(job.error || 'Falló la generación');
+          terminar();
+          return;
+        }
+      }
+      alert('La generación está tardando más de lo esperado. Probá de nuevo en un momento.');
+      terminar();
     } catch (e) {
-      clearInterval(interval);
       alert(e.message);
-    } finally {
-      setTimeout(() => setGen(false), 600);
+      terminar();
     }
   };
 
